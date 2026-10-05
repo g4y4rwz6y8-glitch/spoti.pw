@@ -44,7 +44,10 @@ jobs:
           mkdir -p ipa
           curl -fsSL "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
           case "$(file --mime-type -b ipa/spotify.ipa)" in application/zip|application/x-ios-app) ;; *) echo "::error::Not an IPA"; exit 1 ;; esac
-
+      - name: Keep v0.22.0 UI
+        run: |
+          git checkout v0.22.0 -- tweak/Sources/Shared/Player/ 2>/dev/null || true
+          
       - run: make release
 
       - uses: actions/upload-artifact@v5
