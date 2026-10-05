@@ -43,7 +43,7 @@
             double pitchAcceleration = motion.userAcceleration.z;
             double yawRotationRate = motion.rotationRate.z;
 
-            // Shake Head -> Skip Track
+            // Head Shake -> Skip Track
             if (fabs(yawRotationRate) > 3.0) {
                 Class playbackControllerClass = NSClassFromString(@"SPTPlayerContextPlaybackController");
                 if (playbackControllerClass) {
