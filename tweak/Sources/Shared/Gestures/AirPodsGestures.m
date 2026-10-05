@@ -1,4 +1,4 @@
-#import "AirPodsGestures.h"
+#import "tweak/Sources/Shared/Gestures/AirPodsGestures.h"
 #import <CoreMotion/CoreMotion.h>
 
 @interface AirPodsGestures ()
