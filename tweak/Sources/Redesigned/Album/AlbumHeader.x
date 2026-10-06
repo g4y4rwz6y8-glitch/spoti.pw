@@ -452,7 +452,7 @@ SGRAlbumHero *hero = objc_getAssociatedObject(header, &kHeroKey);
     if (hero && title && parent) {
         [hero playAnimatedCoverWithTitle:firstText(title) artist:firstText(parent) ?: trimmed(parent.accessibilityLabel)];
     }
-
+}
 static void applyPage(UIView *page) {
     UIView *header = SGRFindByIdentifier(page, @"CreativeWorkPlatform.Components.UI.CreativeWorkHeader", &kHeaderKey);
     if (!header) return;
