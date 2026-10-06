@@ -29,6 +29,8 @@
 #import "Redesigned/Lyrics/SGRKaraokeView.h"
 #import "Shared/Lyrics/Lyrics.h"
 #import "Player.h"
+#import "Shared/Player/SGSingSliderView.h"
+#import "Shared/AudioEffects/SGSingAudioProcessor.h"
 
 static const CGFloat kThumbSide = 72;          // the cover once the lyrics are up
 static const CGFloat kThumbGap = 16;           // between the thumbnail and the title beside it
@@ -62,6 +64,7 @@ static __weak UIView *sg_titleElement;      // the arranged element view holding
 @property (nonatomic, readonly) UIImageView *cover;
 @property (nonatomic, readonly) UIView *stage;       // holds the lines' view alone
 @property (nonatomic, readonly) SGRKaraokeView *lyrics;
+@property (nonatomic, readonly) SGSingSliderView *singSlider;
 @end
 
 @implementation SGRPlayerLyricsOverlay {
@@ -83,6 +86,19 @@ static __weak UIView *sg_titleElement;      // the arranged element view holding
     _stage = [[UIView alloc] initWithFrame:CGRectZero];
     [self addSubview:_stage];
     [self addSubview:_thumb];
+    _singSlider = [[SGSingSliderView alloc] initWithFrame:CGRectMake(frame.size.width - 56, frame.size.height - 180, 46, 154)];
+    _singSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+
+    _singSlider.onVocalLevelChanged = ^(float level) {
+        [SGSingAudioProcessor sharedInstance].isEnabled = YES;
+        [SGSingAudioProcessor sharedInstance].vocalLevel = level;
+    };
+
+    _singSlider.onSpatialToggleTapped = ^(BOOL isEnabled) {
+        [SGSingAudioProcessor sharedInstance].spatialVoiceEnabled = isEnabled;
+    };
+
+    [self addSubview:_singSlider];
     return self;
 }
 
