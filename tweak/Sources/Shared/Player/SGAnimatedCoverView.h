@@ -7,4 +7,5 @@
 - (void)loadAnimatedCoverForAlbum:(NSString *)album artist:(NSString *)artist;
 - (void)pausePlayback;
 - (void)resumePlayback;
+- (void)setupPlayerWithURL:(NSURL *)videoURL;
 @end
