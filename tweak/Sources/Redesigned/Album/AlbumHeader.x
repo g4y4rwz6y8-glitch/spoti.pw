@@ -27,6 +27,7 @@
 #import "Core/SGCore.h"
 #import "Redesigned/Kit/SGRKit.h"
 #import "Album.h"
+#import "Shared/Player/SGAnimatedCoverView.h"
 
 // How much of the cover's height the dissolve into the field covers, and the scrim over the top of it that
 // keeps the status bar and the back button legible on a bright picture. The playlist's numbers: one page.
@@ -119,11 +120,13 @@ static void watch(UIView *view, const void *key, void (^laidOut)(UIView *view)) 
 // The cover in Spotify's artwork view, and every cover it puts there afterwards: the hero keeps itself
 // right, rather than being handed a picture on each of the header's passes and staying empty between them.
 - (void)followCover:(UIImageView *)source;
+- (void)playAnimatedCoverWithTitle:(NSString *)title artist:(NSString *)artist;
 @end
 
 @implementation SGRAlbumHero {
     CAGradientLayer *_scrim, *_dissolve;
     __weak UIImageView *_cover;
+    SGAnimatedCoverView *_animatedCover;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -137,6 +140,9 @@ static void watch(UIView *view, const void *key, void (^laidOut)(UIView *view)) 
     _picture.clipsToBounds = YES;
     _picture.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:_picture];
+    _animatedCover = [SGAnimatedCoverView coverViewWithFrame:self.bounds];
+    _animatedCover.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self insertSubview:_animatedCover aboveSubview:_picture];
 
     _scrim = [CAGradientLayer layer];
     _scrim.zPosition = 1;
@@ -210,7 +216,11 @@ static void watch(UIView *view, const void *key, void (^laidOut)(UIView *view)) 
         SGLog(@"redesign album: the cover landed after the header had laid out; the hero took it");
     }
 }
-
+- (void)playAnimatedCoverWithTitle:(NSString *)title artist:(NSString *)artist {
+    if (_animatedCover && title && artist) {
+        [_animatedCover loadAnimatedCoverForAlbum:title artist:artist];
+    }
+}
 @end
 
 // The image view of Spotify's artwork square: the one with the cover in it, or, before the cover has been
@@ -436,7 +446,12 @@ static void applyHeader(UIView *header, UIView *page) {
     CGFloat bottom = rest - SGRHeaderInfoBottom - [info contentHeightForWidth:header.bounds.size.width] + SGRHeaderInfoTitleRise;
     UIView *cover = SGRFindByIdentifier(header, @"CreativeWorkPlatform.Components.UI.ArtWorkElement.WithCoverArt", &kCoverKey);
     if (cover) applyHero(header, cover, bottom);
-}
+SGRAlbumHero *hero = objc_getAssociatedObject(header, &kHeroKey);
+    UIView *title = SGRFindByIdentifier(header, @"CreativeWorkPlatform.Components.UI.TitleRow", &kTitleKey);
+    UIView *parent = SGRFindByIdentifier(header, @"CreativeWorkPlatform.Components.UI.ParentRow", &kParentKey);
+    if (hero && title && parent) {
+        [hero playAnimatedCoverWithTitle:firstText(title) artist:firstText(parent) ?: trimmed(parent.accessibilityLabel)];
+    }
 
 static void applyPage(UIView *page) {
     UIView *header = SGRFindByIdentifier(page, @"CreativeWorkPlatform.Components.UI.CreativeWorkHeader", &kHeaderKey);
