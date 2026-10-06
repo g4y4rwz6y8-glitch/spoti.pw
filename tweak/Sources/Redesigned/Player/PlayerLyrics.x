@@ -71,6 +71,7 @@ static __weak UIView *sg_titleElement;      // the arranged element view holding
     UIView *_thumb, *_stage;
     UIImageView *_cover;
     SGRKaraokeView *_lyrics;
+    SGSingSliderView *_singSlider;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -105,6 +106,7 @@ static __weak UIView *sg_titleElement;      // the arranged element view holding
 - (UIView *)thumb { return _thumb; }
 - (UIImageView *)cover { return _cover; }
 - (UIView *)stage { return _stage; }
+- (SGSingSliderView *)singSlider { return _singSlider; }
 
 // The lines seek when they are tapped and the thumbnail takes no touches, so everywhere else the
 // overlay would only swallow them: a view that takes touches does, even with nothing on it.
