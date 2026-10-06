@@ -278,9 +278,9 @@ static void place(SGRPlayerLyricsOverlay *overlay, UIView *host, SGRLyricsLayout
     SGRShadowPlate *plate = SGRShadowPlateIn(overlay.thumb, &kPlateKey);
     plate.bounds = overlay.thumb.bounds;
     plate.center = CGPointMake(CGRectGetMidX(overlay.thumb.bounds), CGRectGetMidY(overlay.thumb.bounds));
-    overlay.stage.bounds = (CGRect){CGPointZero, stage.size};
-    overlay.stage.center = CGPointMake(CGRectGetMidX(stage), CGRectGetMidY(stage));
-    overlay.singSlider.frame = CGRectMake(overlay.bounds.size.width - 56, overlay.bounds.size.height - 180, 46, 154);
+    overlay.singSlider.frame = CGRectMake(0, 0, 
+    overlay.bounds.size.width, 
+    overlay.bounds.size.height);
 }
 
 // Where the thumbnail's view has to go to land on `l.thumb`, as a transform about its own centre: the
