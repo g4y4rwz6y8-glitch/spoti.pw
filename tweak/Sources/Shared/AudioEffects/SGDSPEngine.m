@@ -1,4 +1,5 @@
 // SGDSPEngine.h says what this is; SGDSPEffects.h lists the effects.
+#import "Shared/AudioEffects/SGSingAudioProcessor.h"
 #import "SGDSPEngine.h"
 #import <mach/mach_time.h>
 #import <math.h>
@@ -236,6 +237,10 @@ static void output(SGDSPEngine *engine, float *left, float *right) {
 // The block through what is on; answers whether anything touched it.
 static bool process(SGDSPEngine *engine, float *left, float *right) {
     bool active = false;
+    if ([SGSingAudioProcessor sharedInstance].isEnabled) {
+        [[SGSingAudioProcessor sharedInstance] processStereoBuffer:left right:right numFrames:kSGDSPEngineBlock];
+        active = true;
+    }
     for (int s = 0; s < SlotCount; s++) {
         Effect *effect = &engine->effects[s];
         if (effect->fade) crossfade(engine, (Slot)s, left, right);
