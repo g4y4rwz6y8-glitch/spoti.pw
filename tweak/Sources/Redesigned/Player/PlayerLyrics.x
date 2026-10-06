@@ -278,6 +278,7 @@ static void place(SGRPlayerLyricsOverlay *overlay, UIView *host, SGRLyricsLayout
     plate.center = CGPointMake(CGRectGetMidX(overlay.thumb.bounds), CGRectGetMidY(overlay.thumb.bounds));
     overlay.stage.bounds = (CGRect){CGPointZero, stage.size};
     overlay.stage.center = CGPointMake(CGRectGetMidX(stage), CGRectGetMidY(stage));
+    overlay.singSlider.frame = CGRectMake(overlay.bounds.size.width - 56, overlay.bounds.size.height - 180, 46, 154);
 }
 
 // Where the thumbnail's view has to go to land on `l.thumb`, as a transform about its own centre: the
@@ -344,6 +345,7 @@ static void setOpen(BOOL open, BOOL animated) {
     };
     void (^show)(void) = ^{
         overlay.stage.alpha = open ? 1 : 0;
+        overlay.singSlider.alpha = open ? 1 : 0;
         overlay.stage.transform = open ? CGAffineTransformIdentity
                                        : CGAffineTransformMakeScale(kLyricsEnterScale, kLyricsEnterScale);
     };
