@@ -13,6 +13,8 @@
 // front of whatever that view still fills itself with, rather than behind the whole page.
 #import "Core/SGCore.h"
 #import "Redesigned/Kit/SGRRepaint.h"
+#import "Shared/Player/SGSingSliderView.h"
+#import "Shared/AudioEffects/SGSingAudioProcessor.h"
 
 static char kPageGlassKey;
 
@@ -52,6 +54,22 @@ static UIView *clearAncestors(UIView *view) {
     glass.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     // Full bleed, so the shape is spelled out: a fresh pane does not promise square corners.
     SGShapeGlass(glass, 0, NO);
+}
+static SGSingSliderView *singSlider = nil;
+if (!singSlider) {
+    singSlider = [[SGSingSliderView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 56, self.view.bounds.size.height - 180, 46, 154)];
+    singSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+
+    singSlider.onVocalLevelChanged = ^(float level) {
+        [SGSingAudioProcessor sharedInstance].isEnabled = YES;
+        [SGSingAudioProcessor sharedInstance].vocalLevel = level;
+    };
+
+    singSlider.onSpatialToggleTapped = ^(BOOL isEnabled) {
+        [SGSingAudioProcessor sharedInstance].spatialVoiceEnabled = isEnabled;
+    };
+
+    [self.view addSubview:singSlider];
 }
 %end
 
