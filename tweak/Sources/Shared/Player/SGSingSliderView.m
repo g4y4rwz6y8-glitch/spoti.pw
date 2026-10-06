@@ -99,13 +99,15 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    _micButton.frame = CGRectMake(self.bounds.size.width - 46, self.bounds.size.height - 46, 46, 46);
+    CGFloat rightX = self.bounds.size.width - 60.0f;
+    CGFloat bottomY = self.bounds.size.height - 60.0f;
+
+    _micButton.frame = CGRectMake(rightX, bottomY, 44.0f, 44.0f);
 
     if (_isExpanded) {
-        // Pill dimensions: 46pt wide x 154pt tall (Standard Apple Music Sing pill spec)
-        _pillBackground.frame = CGRectMake(self.bounds.size.width - 46, self.bounds.size.height - 154, 46, 154);
-        _spatialButton.frame = CGRectMake(self.bounds.size.width - 88, self.bounds.size.height - 98, 34, 34);
-        _micIconInsidePill.frame = CGRectMake(0, 154 - 46, 46, 46);
+        _pillBackground.frame = CGRectMake(rightX, bottomY - 110.0f, 44.0f, 154.0f);
+        _spatialButton.frame = CGRectMake(rightX - 46.0f, bottomY - 55.0f, 36.0f, 36.0f);
+        _micIconInsidePill.frame = CGRectMake(0, 154.0f - 44.0f, 44.0f, 44.0f);
 
         // Map Level (0.0 to 2.0) to Fill Height
         float normalized = _currentLevel / 2.0f;
@@ -189,5 +191,9 @@
         self.onSpatialToggleTapped(spatialOn);
     }
 }
-
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    UIView *hit = [super hitTest:point withEvent:event];
+    // If the tap didn't land on the mic button or the pill slider, pass it through to the lyrics!
+    return (hit == self) ? nil : hit;
+}
 @end
