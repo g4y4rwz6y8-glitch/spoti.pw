@@ -122,8 +122,26 @@ static void watch(UIView *view, const void *key, void (^laidOut)(UIView *view)) 
 // The cover in Spotify's artwork view, and every cover it puts there afterwards: the hero keeps itself
 // right, rather than being handed a picture on each of the header's passes and staying empty between them.
 - (void)followCover:(UIImageView *)source;
-- (void)playAnimatedCoverWithTitle:(NSString *)title artist:(NSString *)artist;
-@end
+- (void)playAnimatedCoverWithTitle:(NSString *)title artist:(NSString *)artist {
+    if (!_animatedCover || !title || !artist) return;
+
+    // PREVENT CRASH: If this album is already loaded, do nothing!
+    static NSString *lastLoadedAlbum = nil;
+    if ([lastLoadedAlbum isEqualToString:title]) return;
+    lastLoadedAlbum = [title copy];
+
+    // Safe background fetch
+    SGAppleArtworkFind(artist, title, NO, ^(SGCanvas *canvas, NSString *note) {
+        if (canvas) {
+            NSURL *videoURL = [canvas valueForKey:@"URL"] ?: [canvas valueForKey:@"url"] ?: [canvas valueForKey:@"fileURL"];
+            if (videoURL) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [_animatedCover setupPlayerWithURL:videoURL];
+                });
+            }
+        }
+    });
+}
 
 @implementation SGRAlbumHero {
     CAGradientLayer *_scrim, *_dissolve;
