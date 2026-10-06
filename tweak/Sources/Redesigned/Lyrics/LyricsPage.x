@@ -11,6 +11,7 @@
 // comes back through a path SGRRepaint.x never sees, so a sweep at layout time loses the race.
 // FullscreenView is asked not to keep it at all instead. The pane goes inside FullscreenView, in
 // front of whatever that view still fills itself with, rather than behind the whole page.
+// The redesign's full screen lyrics page, on glass over the redesigned player, which shows through it:
 #import "Core/SGCore.h"
 #import "Redesigned/Kit/SGRRepaint.h"
 #import "Shared/Player/SGSingSliderView.h"
@@ -18,8 +19,6 @@
 
 static char kPageGlassKey;
 
-// Up to the presentation: the template views in between paint themselves opaque once, at setup.
-// Only the chain is cleared, not the subtree -- nothing else on the page is painted.
 static UIView *clearAncestors(UIView *view) {
     UIView *top = view;
     for (UIView *v = view; v && ![v isKindOfClass:UIWindow.class]
@@ -31,7 +30,7 @@ static UIView *clearAncestors(UIView *view) {
 }
 
 %hook _TtC32Lyrics_FullscreenElementPageImpl14FullscreenView
-// A colour kept here is re-applied whenever UIKit feels like it, so it is refused outright.
+
 - (void)setBackgroundColor:(UIColor *)color {
     static dispatch_once_t once;
     dispatch_once(&once, ^{ SGLog(@"lyrics page paints itself %@ through UIView", color); });
@@ -47,30 +46,30 @@ static UIView *clearAncestors(UIView *view) {
     sgr_lyricsPageRoot = clearAncestors(page);
 
     UIVisualEffectView *glass = SGGlassFor(page, &kPageGlassKey);
-    // Dark whatever the system is set to: the page is presented outside the navigation stacks Spotify
-    // makes dark, and would be light glass under white lyrics on a phone in light mode.
     if (glass.overrideUserInterfaceStyle != UIUserInterfaceStyleDark) glass.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     glass.frame = page.bounds;
     glass.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    // Full bleed, so the shape is spelled out: a fresh pane does not promise square corners.
     SGShapeGlass(glass, 0, NO);
+
+    // --- MOUNT THE SING MIC PILL ON THE LYRICS GLASS ---
+    static SGSingSliderView *singSlider = nil;
+    if (!singSlider) {
+        singSlider = [[SGSingSliderView alloc] initWithFrame:CGRectMake(page.bounds.size.width - 56, page.bounds.size.height - 180, 46, 154)];
+        singSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+
+        singSlider.onVocalLevelChanged = ^(float level) {
+            [SGSingAudioProcessor sharedInstance].isEnabled = YES;
+            [SGSingAudioProcessor sharedInstance].vocalLevel = level;
+        };
+
+        singSlider.onSpatialToggleTapped = ^(BOOL isEnabled) {
+            [SGSingAudioProcessor sharedInstance].spatialVoiceEnabled = isEnabled;
+        };
+
+        [page addSubview:singSlider];
+    }
 }
-static SGSingSliderView *singSlider = nil;
-if (!singSlider) {
-    singSlider = [[SGSingSliderView alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 56, self.view.bounds.size.height - 180, 46, 154)];
-    singSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
 
-    singSlider.onVocalLevelChanged = ^(float level) {
-        [SGSingAudioProcessor sharedInstance].isEnabled = YES;
-        [SGSingAudioProcessor sharedInstance].vocalLevel = level;
-    };
-
-    singSlider.onSpatialToggleTapped = ^(BOOL isEnabled) {
-        [SGSingAudioProcessor sharedInstance].spatialVoiceEnabled = isEnabled;
-    };
-
-    [self.view addSubview:singSlider];
-}
 %end
 
 %ctor {
