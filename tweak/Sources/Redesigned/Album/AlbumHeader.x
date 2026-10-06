@@ -28,6 +28,8 @@
 #import "Redesigned/Kit/SGRKit.h"
 #import "Album.h"
 #import "Shared/Player/SGAnimatedCoverView.h"
+#import "Shared/LockScreenArtwork/SGAppleArtwork.h"
+#import "Shared/LockScreenArtwork/SGCanvas.h"
 
 // How much of the cover's height the dissolve into the field covers, and the scrim over the top of it that
 // keeps the status bar and the back button legible on a bright picture. The playlist's numbers: one page.
@@ -217,9 +219,17 @@ static void watch(UIView *view, const void *key, void (^laidOut)(UIView *view)) 
     }
 }
 - (void)playAnimatedCoverWithTitle:(NSString *)title artist:(NSString *)artist {
-    if (_animatedCover && title && artist) {
-        [_animatedCover loadAnimatedCoverForAlbum:title artist:artist];
-    }
+    if (!_animatedCover || !title || !artist) return;
+
+    // Use the official Apple Music web player token scraper
+    SGAppleArtworkFind(artist, title, NO, ^(SGCanvas *canvas, NSString *note) {
+        if (canvas) {
+            NSURL *videoURL = [canvas valueForKey:@"URL"] ?: [canvas valueForKey:@"url"] ?: [canvas valueForKey:@"fileURL"];
+            if (videoURL) {
+                [_animatedCover setupPlayerWithURL:videoURL];
+            }
+        }
+    });
 }
 @end
 
